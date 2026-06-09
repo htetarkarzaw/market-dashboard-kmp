@@ -8,7 +8,7 @@ import io.ktor.client.plugins.HttpTimeout
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 
-const val BASE_URL = "https://api.coingecko.com/api/v3"
+const val BASE_URL = "https://api.binance.com/api/v3"
 
 fun createHttpClient(): HttpClient = HttpClient {
     install(ContentNegotiation) {
