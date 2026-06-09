@@ -63,7 +63,7 @@ kotlin {
 sqldelight {
     databases {
         create("MarketDatabase") {
-            packageName.set("com.marketdashboard.db")
+            packageName.set("com.htetarkarzaw.marketdashboard.data.local")
         }
     }
 }

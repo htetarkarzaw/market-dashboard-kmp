@@ -1,0 +1,32 @@
+CREATE TABLE CoinEntity (
+    symbol TEXT NOT NULL PRIMARY KEY,
+    baseAsset TEXT NOT NULL,
+    lastPrice REAL NOT NULL,
+    priceChangePercent REAL NOT NULL,
+    highPrice REAL NOT NULL,
+    lowPrice REAL NOT NULL,
+    volume REAL NOT NULL,
+    iconUrl TEXT NOT NULL
+);
+
+selectAll:
+SELECT * FROM CoinEntity
+LIMIT :limit OFFSET :offset;
+
+upsertAll:
+INSERT OR REPLACE INTO CoinEntity (
+    symbol,
+    baseAsset,
+    lastPrice,
+    priceChangePercent,
+    highPrice,
+    lowPrice,
+    volume,
+    iconUrl
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+countAll:
+SELECT COUNT(*) FROM CoinEntity;
+
+deleteAll:
+DELETE FROM CoinEntity;
