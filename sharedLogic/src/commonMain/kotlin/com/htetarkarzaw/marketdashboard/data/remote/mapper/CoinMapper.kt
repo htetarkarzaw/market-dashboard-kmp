@@ -17,7 +17,7 @@ fun CoinDto.toDomain(): Coin {
         priceChangePercent = priceChangePercent.toDoubleOrNull() ?: 0.0,
         highPrice = highPrice.toDoubleOrNull() ?: 0.0,
         lowPrice = lowPrice.toDoubleOrNull() ?: 0.0,
-        volume = volume.toDoubleOrNull() ?: 0.0,
+        volume = quoteVolume.toDoubleOrNull() ?: 0.0,
         iconUrl = "https://assets.coincap.io/assets/icons/${baseAsset.lowercase()}@2x.png"
     )
 }

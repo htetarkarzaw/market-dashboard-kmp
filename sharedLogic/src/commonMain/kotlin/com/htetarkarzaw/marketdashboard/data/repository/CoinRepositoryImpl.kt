@@ -20,7 +20,8 @@ class CoinRepositoryImpl(
     override suspend fun refreshCoins() {
         val coins = api.fetchTickers()
             .filter { it.symbol.endsWith("USDT") }
-            .sortedByDescending { it.volume.toDoubleOrNull() ?: 0.0 }
+            .filter { (it.quoteVolume.toDoubleOrNull() ?: 0.0) > 1_000_000.0 }
+            .take(100)
             .map { it.toDomain() }
 
         val queries = database.coinEntityQueries

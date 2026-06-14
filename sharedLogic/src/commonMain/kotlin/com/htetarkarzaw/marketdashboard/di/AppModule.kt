@@ -8,6 +8,7 @@ import com.htetarkarzaw.marketdashboard.data.repository.CoinRepositoryImpl
 import com.htetarkarzaw.marketdashboard.domain.repository.CoinRepository
 import com.htetarkarzaw.marketdashboard.domain.usecase.GetCoinsUseCase
 import com.htetarkarzaw.marketdashboard.domain.usecase.RefreshCoinsUseCase
+import org.koin.core.KoinApplication
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
 import org.koin.dsl.bind
@@ -22,8 +23,12 @@ val appModule = module {
     factory { RefreshCoinsUseCase(get()) }
 }
 
-fun initKoin(additionalModules: List<Module> = emptyList()) {
+fun initKoin(
+    additionalModules: List<Module> = emptyList(),
+    appDeclaration: KoinApplication.() -> Unit = {}
+) {
     startKoin {
+        appDeclaration()
         modules(listOf(appModule) + additionalModules)
     }
 }

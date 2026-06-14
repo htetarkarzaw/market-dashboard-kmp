@@ -10,5 +10,6 @@ data class CoinDto(
     @SerialName("priceChangePercent") val priceChangePercent: String,
     @SerialName("highPrice") val highPrice: String,
     @SerialName("lowPrice") val lowPrice: String,
-    @SerialName("volume") val volume: String
+    @SerialName("volume") val volume: String,
+    @SerialName("quoteVolume") val quoteVolume: String
 )
