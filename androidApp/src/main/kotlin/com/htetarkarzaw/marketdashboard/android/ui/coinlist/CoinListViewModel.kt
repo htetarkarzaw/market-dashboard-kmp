@@ -16,6 +16,7 @@ import com.htetarkarzaw.marketdashboard.domain.usecase.GetCoinsUseCase
 import com.htetarkarzaw.marketdashboard.domain.usecase.RefreshCoinsUseCase
 import com.htetarkarzaw.marketdashboard.domain.usecase.StartPriceUpdatesUseCase
 import io.github.aakira.napier.Napier
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -60,6 +61,8 @@ class CoinListViewModel(
                 try {
                     startPriceUpdatesUseCase()
                     delayMs = 1_000L
+                } catch (e: CancellationException) {
+                    throw e
                 } catch (e: Exception) {
                     Napier.e("WebSocket error (${e.message}), retrying in ${delayMs}ms", tag = "WebSocket")
                 }
