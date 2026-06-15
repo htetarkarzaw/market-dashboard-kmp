@@ -27,7 +27,7 @@ jobs:
           restore-keys: gradle-
 
       - name: Run tests
-        run: ./gradlew :sharedLogic:testDebugUnitTest
+        run: ./gradlew :sharedLogic:allTests -Pkotlin.native.ignoreDisabledTargets=true
 
       - name: Build Android APK
         run: ./gradlew :androidApp:assembleDebug
