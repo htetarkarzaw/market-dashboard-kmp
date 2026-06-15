@@ -33,3 +33,12 @@ SELECT COUNT(*) FROM CoinEntity;
 
 deleteAll:
 DELETE FROM CoinEntity;
+
+updatePrice:
+UPDATE CoinEntity
+SET lastPrice = ?,
+    priceChangePercent = ?,
+    highPrice = ?,
+    lowPrice = ?,
+    volume = ?
+WHERE symbol = ?;

@@ -3,6 +3,7 @@ package com.htetarkarzaw.marketdashboard.data.repository
 import com.htetarkarzaw.marketdashboard.data.local.CoinEntity
 import com.htetarkarzaw.marketdashboard.data.local.MarketDatabase
 import com.htetarkarzaw.marketdashboard.data.remote.BinanceApi
+import com.htetarkarzaw.marketdashboard.data.remote.BinanceWebSocketClient
 import com.htetarkarzaw.marketdashboard.data.remote.mapper.toDomain
 import com.htetarkarzaw.marketdashboard.domain.model.Coin
 import com.htetarkarzaw.marketdashboard.domain.repository.CoinRepository
@@ -14,8 +15,29 @@ import kotlinx.coroutines.flow.map
 
 class CoinRepositoryImpl(
     private val api: BinanceApi,
-    private val database: MarketDatabase
+    private val database: MarketDatabase,
+    private val wsClient: BinanceWebSocketClient
 ) : CoinRepository {
+
+    override suspend fun startPriceUpdates() {
+        wsClient.observePrices().collect { tickers ->
+            tickers
+                .filter { it.symbol.endsWith("USDT") }
+                .forEach { ticker ->
+                    val open = ticker.openPrice.toDoubleOrNull() ?: 0.0
+                    val close = ticker.lastPrice.toDoubleOrNull() ?: 0.0
+                    val priceChangePercent = if (open != 0.0) ((close - open) / open) * 100 else 0.0
+                    database.coinEntityQueries.updatePrice(
+                        lastPrice = close,
+                        priceChangePercent = priceChangePercent,
+                        highPrice = ticker.highPrice.toDoubleOrNull() ?: 0.0,
+                        lowPrice = ticker.lowPrice.toDoubleOrNull() ?: 0.0,
+                        volume = ticker.quoteVolume.toDoubleOrNull() ?: 0.0,
+                        symbol = ticker.symbol
+                    )
+                }
+        }
+    }
 
     override suspend fun refreshCoins() {
         val coins = api.fetchTickers()

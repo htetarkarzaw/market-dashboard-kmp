@@ -12,6 +12,7 @@ import com.htetarkarzaw.marketdashboard.android.ui.coinlist.CoinListUiState.Succ
 import com.htetarkarzaw.marketdashboard.android.ui.model.toUiModel
 import com.htetarkarzaw.marketdashboard.domain.usecase.GetCoinsUseCase
 import com.htetarkarzaw.marketdashboard.domain.usecase.RefreshCoinsUseCase
+import com.htetarkarzaw.marketdashboard.domain.usecase.StartPriceUpdatesUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,7 +21,8 @@ import kotlinx.coroutines.launch
 
 class CoinListViewModel(
     private val getCoinsUseCase: GetCoinsUseCase,
-    private val refreshCoinsUseCase: RefreshCoinsUseCase
+    private val refreshCoinsUseCase: RefreshCoinsUseCase,
+    private val startPriceUpdatesUseCase: StartPriceUpdatesUseCase
 ) : ViewModel() {
 
     private val _uiState: MutableStateFlow<CoinListUiState> = MutableStateFlow(Loading)
@@ -41,11 +43,23 @@ class CoinListViewModel(
         }
     }
 
+    private fun startPriceUpdates() {
+        viewModelScope.launch {
+            try {
+                startPriceUpdatesUseCase()
+            } catch (e: Exception) {
+                // WebSocket error — log but don't crash UI
+                // prices will still show from DB, just won't update live
+            }
+        }
+    }
+
     private fun loadInitial() {
         _uiState.value = Loading
         viewModelScope.launch {
             try {
                 refreshCoinsUseCase()
+                startPriceUpdates()
                 getCoinsUseCase(page = 0, pageSize = pageSize)
                     .catch { e -> _uiState.value = Error(e.message ?: "Unknown error") }
                     .collect { coins ->
