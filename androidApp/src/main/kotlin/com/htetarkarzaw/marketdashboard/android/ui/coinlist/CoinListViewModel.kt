@@ -6,6 +6,8 @@ import com.htetarkarzaw.marketdashboard.android.ui.coinlist.CoinListIntent.Dismi
 import com.htetarkarzaw.marketdashboard.android.ui.coinlist.CoinListIntent.LoadInitial
 import com.htetarkarzaw.marketdashboard.android.ui.coinlist.CoinListIntent.ReachedEnd
 import com.htetarkarzaw.marketdashboard.android.ui.coinlist.CoinListIntent.Refresh
+import com.htetarkarzaw.marketdashboard.android.ui.coinlist.CoinListIntent.StartPriceUpdates
+import com.htetarkarzaw.marketdashboard.android.ui.coinlist.CoinListIntent.StopPriceUpdates
 import com.htetarkarzaw.marketdashboard.android.ui.coinlist.CoinListUiState.Error
 import com.htetarkarzaw.marketdashboard.android.ui.coinlist.CoinListUiState.Loading
 import com.htetarkarzaw.marketdashboard.android.ui.coinlist.CoinListUiState.Success
@@ -13,11 +15,16 @@ import com.htetarkarzaw.marketdashboard.android.ui.model.toUiModel
 import com.htetarkarzaw.marketdashboard.domain.usecase.GetCoinsUseCase
 import com.htetarkarzaw.marketdashboard.domain.usecase.RefreshCoinsUseCase
 import com.htetarkarzaw.marketdashboard.domain.usecase.StartPriceUpdatesUseCase
+import io.github.aakira.napier.Napier
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 class CoinListViewModel(
     private val getCoinsUseCase: GetCoinsUseCase,
@@ -29,6 +36,7 @@ class CoinListViewModel(
     val uiState: StateFlow<CoinListUiState> = _uiState.asStateFlow()
 
     private val pageSize = 20
+    private var priceUpdateJob: Job? = null
 
     fun onIntent(intent: CoinListIntent) {
         when (intent) {
@@ -40,18 +48,31 @@ class CoinListViewModel(
                 loadNextPage()
             }
             is DismissError -> dismissError()
+            is StartPriceUpdates -> startPriceUpdates()
+            is StopPriceUpdates -> stopPriceUpdates()
         }
     }
 
     private fun startPriceUpdates() {
-        viewModelScope.launch {
-            try {
-                startPriceUpdatesUseCase()
-            } catch (e: Exception) {
-                // WebSocket error — log but don't crash UI
-                // prices will still show from DB, just won't update live
+        priceUpdateJob = viewModelScope.launch {
+            var delayMs = 1_000L
+            while (isActive) {
+                try {
+                    startPriceUpdatesUseCase()
+                    delayMs = 1_000L
+                } catch (e: Exception) {
+                    Napier.e("WebSocket error (${e.message}), retrying in ${delayMs}ms", tag = "WebSocket")
+                }
+                if (isActive) {
+                    delay(delayMs.milliseconds)
+                    delayMs = (delayMs * 2).coerceAtMost(30_000L)
+                }
             }
         }
+    }
+
+    private fun stopPriceUpdates() {
+        priceUpdateJob?.cancel()
     }
 
     private fun loadInitial() {
@@ -59,7 +80,6 @@ class CoinListViewModel(
         viewModelScope.launch {
             try {
                 refreshCoinsUseCase()
-                startPriceUpdates()
                 getCoinsUseCase(page = 0, pageSize = pageSize)
                     .catch { e -> _uiState.value = Error(e.message ?: "Unknown error") }
                     .collect { coins ->

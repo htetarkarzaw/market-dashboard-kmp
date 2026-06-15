@@ -5,4 +5,6 @@ sealed class CoinListIntent {
     object Refresh : CoinListIntent()
     object ReachedEnd : CoinListIntent()
     object DismissError : CoinListIntent()
+    object StartPriceUpdates : CoinListIntent()
+    object StopPriceUpdates : CoinListIntent()
 }

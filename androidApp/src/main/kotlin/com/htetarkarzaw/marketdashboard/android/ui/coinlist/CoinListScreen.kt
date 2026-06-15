@@ -17,6 +17,10 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
+import kotlinx.coroutines.awaitCancellation
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -26,6 +30,8 @@ import com.htetarkarzaw.marketdashboard.android.ui.coinlist.CoinListIntent.Dismi
 import com.htetarkarzaw.marketdashboard.android.ui.coinlist.CoinListIntent.LoadInitial
 import com.htetarkarzaw.marketdashboard.android.ui.coinlist.CoinListIntent.ReachedEnd
 import com.htetarkarzaw.marketdashboard.android.ui.coinlist.CoinListIntent.Refresh
+import com.htetarkarzaw.marketdashboard.android.ui.coinlist.CoinListIntent.StartPriceUpdates
+import com.htetarkarzaw.marketdashboard.android.ui.coinlist.CoinListIntent.StopPriceUpdates
 import com.htetarkarzaw.marketdashboard.android.ui.coinlist.CoinListUiState.Error
 import com.htetarkarzaw.marketdashboard.android.ui.coinlist.CoinListUiState.Loading
 import com.htetarkarzaw.marketdashboard.android.ui.coinlist.CoinListUiState.Success
@@ -39,6 +45,18 @@ fun CoinListScreen(viewModel: CoinListViewModel = koinViewModel()) {
 
     LaunchedEffect(Unit) {
         viewModel.onIntent(LoadInitial)
+    }
+
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    LaunchedEffect(lifecycle) {
+        lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            try {
+                viewModel.onIntent(StartPriceUpdates)
+                awaitCancellation()
+            } finally {
+                viewModel.onIntent(StopPriceUpdates)
+            }
+        }
     }
 
     when (val state = uiState) {
