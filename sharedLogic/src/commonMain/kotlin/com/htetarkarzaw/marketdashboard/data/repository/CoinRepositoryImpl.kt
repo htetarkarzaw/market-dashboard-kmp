@@ -6,9 +6,11 @@ import com.htetarkarzaw.marketdashboard.data.remote.BinanceApi
 import com.htetarkarzaw.marketdashboard.data.remote.BinanceWebSocketClient
 import com.htetarkarzaw.marketdashboard.data.remote.mapper.toDomain
 import com.htetarkarzaw.marketdashboard.domain.model.Coin
+import com.htetarkarzaw.marketdashboard.domain.model.MarketSummary
 import com.htetarkarzaw.marketdashboard.domain.repository.CoinRepository
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
+import app.cash.sqldelight.coroutines.mapToOne
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -60,6 +62,21 @@ class CoinRepositoryImpl(
                 iconUrl = coin.iconUrl
             )
         }
+    }
+
+    override fun getMarketSummary(): Flow<MarketSummary> {
+        return database.coinEntityQueries.getMarketSummary()
+            .asFlow()
+            .mapToOne(Dispatchers.Default)
+            .map { result ->
+                MarketSummary(
+                    totalVolume = result.totalVolume ?: 0.0,
+                    topGainerSymbol = result.topGainerSymbol,
+                    topGainerPercent = result.topGainerPercent ?: 0.0,
+                    topLoserSymbol = result.topLoserSymbol,
+                    topLoserPercent = result.topLoserPercent ?: 0.0
+                )
+            }
     }
 
     override fun getCoins(page: Int, pageSize: Int): Flow<List<Coin>> {

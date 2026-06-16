@@ -1,0 +1,3 @@
+CREATE TABLE IF NOT EXISTS WatchlistEntity (
+    coinId TEXT NOT NULL PRIMARY KEY
+);

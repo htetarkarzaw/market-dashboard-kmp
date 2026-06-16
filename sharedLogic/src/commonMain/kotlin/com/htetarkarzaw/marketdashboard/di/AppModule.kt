@@ -13,6 +13,7 @@ import com.htetarkarzaw.marketdashboard.domain.repository.CoinRepository
 import com.htetarkarzaw.marketdashboard.domain.repository.WatchlistRepository
 import com.htetarkarzaw.marketdashboard.domain.usecase.AddToWatchlistUseCase
 import com.htetarkarzaw.marketdashboard.domain.usecase.GetCoinsUseCase
+import com.htetarkarzaw.marketdashboard.domain.usecase.GetMarketSummaryUseCase
 import com.htetarkarzaw.marketdashboard.domain.usecase.GetWatchlistUseCase
 import com.htetarkarzaw.marketdashboard.domain.usecase.RefreshCoinsUseCase
 import com.htetarkarzaw.marketdashboard.domain.usecase.RemoveFromWatchlistUseCase
@@ -36,6 +37,7 @@ val appModule = module {
     factory { GetWatchlistUseCase(get()) }
     factory { AddToWatchlistUseCase(get()) }
     factory { RemoveFromWatchlistUseCase(get()) }
+    factory { GetMarketSummaryUseCase(get()) }
 }
 
 fun initKoin(

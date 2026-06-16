@@ -9,6 +9,6 @@ import org.koin.dsl.module
 
 val androidModule = module {
     single { DatabaseDriverFactory(androidContext()) }
-    viewModel { CoinListViewModel(get(), get(), get(), get(), get()) }
+    viewModel { CoinListViewModel(get(), get(), get(), get(), get(), get()) }
     viewModel { WatchlistViewModel(get(), get()) }
 }
