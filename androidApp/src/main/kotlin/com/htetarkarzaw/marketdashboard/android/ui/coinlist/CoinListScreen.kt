@@ -187,7 +187,7 @@ fun CoinListScreen(
                         if (state.hasReachedEnd) {
                             item {
                                 Text(
-                                    text = "You've reached the end",
+                                    text = "You've reached the end it's enough.",
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(16.dp),
