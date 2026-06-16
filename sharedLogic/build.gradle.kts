@@ -64,6 +64,7 @@ kotlin {
         }
         sourceSets["androidHostTest"].dependencies {
             implementation(libs.mockk)
+            implementation("app.cash.sqldelight:sqlite-driver:2.0.2")
         }
     }
 }
