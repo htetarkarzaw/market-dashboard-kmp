@@ -6,5 +6,6 @@ data class CoinUiModel(
     val iconUrl: String,
     val priceFormatted: String,
     val priceChangeFormatted: String,
-    val isPositiveChange: Boolean
+    val isPositiveChange: Boolean,
+    val isWatchlisted: Boolean = false
 )
