@@ -31,6 +31,11 @@ dependencies {
     implementation(libs.lifecycle.viewmodel.compose)
 
     implementation(libs.napier)
+
+    testImplementation(libs.kotlin.test)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.turbine)
+    testImplementation("junit:junit:4.13.2")
 }
 
 android {

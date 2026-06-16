@@ -4,6 +4,8 @@ import com.htetarkarzaw.marketdashboard.data.local.DatabaseDriverFactory
 import com.htetarkarzaw.marketdashboard.data.local.MarketDatabase
 import com.htetarkarzaw.marketdashboard.data.remote.BinanceApi
 import com.htetarkarzaw.marketdashboard.data.remote.BinanceWebSocketClient
+import com.htetarkarzaw.marketdashboard.data.remote.KtorBinanceApi
+import com.htetarkarzaw.marketdashboard.data.remote.KtorBinanceWebSocketClient
 import com.htetarkarzaw.marketdashboard.data.remote.createHttpClient
 import com.htetarkarzaw.marketdashboard.data.repository.CoinRepositoryImpl
 import com.htetarkarzaw.marketdashboard.domain.repository.CoinRepository
@@ -18,8 +20,8 @@ import org.koin.dsl.module
 
 val appModule = module {
     single { createHttpClient() }
-    single { BinanceApi(get()) }
-    single { BinanceWebSocketClient(get()) }
+    single<BinanceApi> { KtorBinanceApi(get()) }
+    single<BinanceWebSocketClient> { KtorBinanceWebSocketClient(get()) }
     single { MarketDatabase(get<DatabaseDriverFactory>().createDriver()) }
     single { CoinRepositoryImpl(get(), get(), get()) } bind CoinRepository::class
     factory { GetCoinsUseCase(get()) }
