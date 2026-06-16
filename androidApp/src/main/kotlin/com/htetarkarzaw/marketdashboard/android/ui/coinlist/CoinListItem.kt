@@ -24,7 +24,7 @@ import coil3.compose.AsyncImage
 import com.htetarkarzaw.marketdashboard.android.ui.model.CoinUiModel
 
 @Composable
-fun CoinListItem(coin: CoinUiModel, modifier: Modifier = Modifier) {
+fun CoinListItem(coin: CoinUiModel, modifier: Modifier = Modifier, showStar: Boolean = true) {
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -65,13 +65,15 @@ fun CoinListItem(coin: CoinUiModel, modifier: Modifier = Modifier) {
                 color = if (coin.isPositiveChange) Color(0xFF00C853) else Color(0xFFD50000)
             )
         }
-        Icon(
-            imageVector = if (coin.isWatchlisted) Icons.Filled.Star else Icons.Outlined.Star,
-            contentDescription = if (coin.isWatchlisted) "Watchlisted" else "Not watchlisted",
-            tint = if (coin.isWatchlisted) Color(0xFFFFB300) else MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier
-                .padding(start = 8.dp)
-                .size(20.dp)
-        )
+        if (showStar) {
+            Icon(
+                imageVector = if (coin.isWatchlisted) Icons.Filled.Star else Icons.Outlined.Star,
+                contentDescription = if (coin.isWatchlisted) "Watchlisted" else "Not watchlisted",
+                tint = if (coin.isWatchlisted) Color(0xFFFFB300) else MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier
+                    .padding(start = 8.dp)
+                    .size(20.dp)
+            )
+        }
     }
 }

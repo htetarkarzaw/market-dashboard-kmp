@@ -13,8 +13,10 @@ import com.htetarkarzaw.marketdashboard.android.ui.coinlist.CoinListUiState.Erro
 import com.htetarkarzaw.marketdashboard.android.ui.coinlist.CoinListUiState.Loading
 import com.htetarkarzaw.marketdashboard.android.ui.coinlist.CoinListUiState.Success
 import com.htetarkarzaw.marketdashboard.android.ui.model.toUiModel
+import com.htetarkarzaw.marketdashboard.android.util.toUiModel
 import com.htetarkarzaw.marketdashboard.domain.usecase.AddToWatchlistUseCase
 import com.htetarkarzaw.marketdashboard.domain.usecase.GetCoinsUseCase
+import com.htetarkarzaw.marketdashboard.domain.usecase.GetMarketSummaryUseCase
 import com.htetarkarzaw.marketdashboard.domain.usecase.GetWatchlistUseCase
 import com.htetarkarzaw.marketdashboard.domain.usecase.RefreshCoinsUseCase
 import com.htetarkarzaw.marketdashboard.domain.usecase.StartPriceUpdatesUseCase
@@ -36,7 +38,8 @@ class CoinListViewModel(
     private val refreshCoinsUseCase: RefreshCoinsUseCase,
     private val startPriceUpdatesUseCase: StartPriceUpdatesUseCase,
     private val getWatchlistUseCase: GetWatchlistUseCase,
-    private val addToWatchlistUseCase: AddToWatchlistUseCase
+    private val addToWatchlistUseCase: AddToWatchlistUseCase,
+    private val getMarketSummaryUseCase: GetMarketSummaryUseCase
 ) : ViewModel() {
 
     private val _uiState: MutableStateFlow<CoinListUiState> = MutableStateFlow(Loading)
@@ -60,8 +63,6 @@ class CoinListViewModel(
             is AddToWatchlist -> addToWatchlist(intent.coinId)
         }
     }
-
-    fun onAddToWatchlist(coinId: String) = onIntent(AddToWatchlist(coinId))
 
     private fun startPriceUpdates() {
         priceUpdateJob = viewModelScope.launch {
@@ -94,14 +95,18 @@ class CoinListViewModel(
                 refreshCoinsUseCase()
                 combine(
                     getCoinsUseCase(page = 0, pageSize = pageSize),
-                    getWatchlistUseCase()
-                ) { coins, watchlist ->
+                    getWatchlistUseCase(),
+                    getMarketSummaryUseCase()
+                ) { coins, watchlist, summary ->
                     val watchlistIds = watchlist.map { it.symbol }.toSet()
-                    coins.map { it.toUiModel(isWatchlisted = it.symbol in watchlistIds) }
+                    Pair(
+                        coins.map { it.toUiModel(isWatchlisted = it.symbol in watchlistIds) },
+                        summary.toUiModel()
+                    )
                 }
                     .catch { e -> _uiState.value = Error(e.message ?: "Unknown error") }
-                    .collect { coins ->
-                        _uiState.value = Success(coins = coins)
+                    .collect { (coins, summary) ->
+                        _uiState.value = Success(coins = coins, marketSummary = summary)
                     }
             } catch (e: Exception) {
                 _uiState.value = Error(e.message ?: "Unknown error")
@@ -110,26 +115,38 @@ class CoinListViewModel(
     }
 
     private fun refresh() {
+        val current = _uiState.value as? Success
+        _uiState.value = Success(
+            coins = current?.coins ?: emptyList(),
+            marketSummary = current?.marketSummary,
+            isRefreshing = true
+        )
         viewModelScope.launch {
             try {
                 refreshCoinsUseCase()
                 combine(
                     getCoinsUseCase(page = 0, pageSize = pageSize),
-                    getWatchlistUseCase()
-                ) { coins, watchlist ->
+                    getWatchlistUseCase(),
+                    getMarketSummaryUseCase()
+                ) { coins, watchlist, summary ->
                     val watchlistIds = watchlist.map { it.symbol }.toSet()
-                    coins.map { it.toUiModel(isWatchlisted = it.symbol in watchlistIds) }
+                    Pair(
+                        coins.map { it.toUiModel(isWatchlisted = it.symbol in watchlistIds) },
+                        summary.toUiModel()
+                    )
                 }
                     .catch { e ->
-                        val currentCoins = (_uiState.value as? Success)?.coins ?: emptyList()
-                        _uiState.value = Success(coins = currentCoins, errorMessage = e.message)
+                        val coins = (_uiState.value as? Success)?.coins ?: emptyList()
+                        val summary = (_uiState.value as? Success)?.marketSummary
+                        _uiState.value = Success(coins = coins, marketSummary = summary, errorMessage = e.message)
                     }
-                    .collect { coins ->
-                        _uiState.value = Success(coins = coins, hasReachedEnd = false)
+                    .collect { (coins, summary) ->
+                        _uiState.value = Success(coins = coins, marketSummary = summary, hasReachedEnd = false)
                     }
             } catch (e: Exception) {
-                val currentCoins = (_uiState.value as? Success)?.coins ?: emptyList()
-                _uiState.value = Success(coins = currentCoins, errorMessage = e.message ?: "Unknown error")
+                val coins = (_uiState.value as? Success)?.coins ?: emptyList()
+                val summary = (_uiState.value as? Success)?.marketSummary
+                _uiState.value = Success(coins = coins, marketSummary = summary, errorMessage = e.message ?: "Unknown error")
             }
         }
     }
@@ -147,8 +164,12 @@ class CoinListViewModel(
                 newCoins.map { it.toUiModel(isWatchlisted = it.symbol in watchlistIds) }
             }
                 .catch { e ->
-                    val currentCoins = (_uiState.value as? Success)?.coins ?: emptyList()
-                    _uiState.value = Success(coins = currentCoins, errorMessage = e.message)
+                    val current = _uiState.value as? Success
+                    _uiState.value = Success(
+                        coins = current?.coins ?: emptyList(),
+                        marketSummary = current?.marketSummary,
+                        errorMessage = e.message
+                    )
                 }
                 .collect { newCoins ->
                     val current = _uiState.value as? Success ?: return@collect
@@ -156,7 +177,10 @@ class CoinListViewModel(
                         _uiState.value = current.copy(isLoadingMore = false, hasReachedEnd = true)
                         return@collect
                     }
-                    _uiState.value = Success(coins = current.coins + newCoins)
+                    _uiState.value = Success(
+                        coins = current.coins + newCoins,
+                        marketSummary = current.marketSummary
+                    )
                 }
         }
     }

@@ -42,3 +42,12 @@ SET lastPrice = ?,
     lowPrice = ?,
     volume = ?
 WHERE symbol = ?;
+
+getMarketSummary:
+SELECT
+    SUM(volume) AS totalVolume,
+    MAX(priceChangePercent) AS topGainerPercent,
+    MIN(priceChangePercent) AS topLoserPercent,
+    (SELECT symbol FROM CoinEntity ORDER BY priceChangePercent DESC LIMIT 1) AS topGainerSymbol,
+    (SELECT symbol FROM CoinEntity ORDER BY priceChangePercent ASC LIMIT 1) AS topLoserSymbol
+FROM CoinEntity;
