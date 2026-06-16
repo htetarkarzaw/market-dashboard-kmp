@@ -70,3 +70,4 @@ Binance public API (no key needed)
 15. Never git add build outputs, .gradle folders, or generated files
 16. Always respect .gitignore rules
 17. Never stage: build/, .gradle/, *.class, local.properties, *.iml, .DS_Store
+27. Do not add Co-Authored-By trailer to commit messages

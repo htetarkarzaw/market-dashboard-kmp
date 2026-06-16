@@ -1,0 +1,22 @@
+CREATE TABLE WatchlistEntity (
+    coinId TEXT NOT NULL PRIMARY KEY
+);
+
+selectAll:
+SELECT * FROM WatchlistEntity;
+
+insert:
+INSERT OR IGNORE INTO WatchlistEntity VALUES (?);
+
+delete:
+DELETE FROM WatchlistEntity WHERE coinId = ?;
+
+exists:
+SELECT COUNT(*) FROM WatchlistEntity WHERE coinId = ?;
+
+selectWatchlistCoins:
+SELECT c.symbol, c.baseAsset, c.lastPrice, c.priceChangePercent,
+       c.highPrice, c.lowPrice, c.volume, c.iconUrl
+FROM CoinEntity c
+INNER JOIN WatchlistEntity w ON c.symbol = w.coinId
+ORDER BY c.volume DESC;

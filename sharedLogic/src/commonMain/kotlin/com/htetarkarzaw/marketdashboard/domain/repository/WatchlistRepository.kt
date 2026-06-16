@@ -1,10 +1,10 @@
 package com.htetarkarzaw.marketdashboard.domain.repository
 
-import com.htetarkarzaw.marketdashboard.domain.model.WatchlistItem
+import com.htetarkarzaw.marketdashboard.domain.model.Coin
 import kotlinx.coroutines.flow.Flow
 
 interface WatchlistRepository {
-    fun getWatchlist(): Flow<List<WatchlistItem>>
+    fun getWatchlistCoins(): Flow<List<Coin>>
     suspend fun addToWatchlist(coinId: String)
     suspend fun removeFromWatchlist(coinId: String)
 }

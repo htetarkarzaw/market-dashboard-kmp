@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.kotlinSerialization)
 }
 
 kotlin {
@@ -17,6 +18,7 @@ dependencies {
     implementation(libs.androidx.activity.compose)
 
     implementation(libs.compose.material3)
+    implementation(libs.compose.material.icons.extended)
     implementation(libs.compose.uiToolingPreview)
     debugImplementation(libs.compose.uiTooling)
 
@@ -31,6 +33,9 @@ dependencies {
     implementation(libs.lifecycle.viewmodel.compose)
 
     implementation(libs.napier)
+
+    implementation(libs.androidx.navigation3.compose)
+    implementation(libs.androidx.navigation3.runtime)
 
     testImplementation(libs.kotlin.test)
     testImplementation(libs.kotlinx.coroutines.test)

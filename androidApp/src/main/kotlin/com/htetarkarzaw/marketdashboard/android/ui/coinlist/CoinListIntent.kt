@@ -7,4 +7,5 @@ sealed class CoinListIntent {
     object DismissError : CoinListIntent()
     object StartPriceUpdates : CoinListIntent()
     object StopPriceUpdates : CoinListIntent()
+    data class AddToWatchlist(val coinId: String) : CoinListIntent()
 }

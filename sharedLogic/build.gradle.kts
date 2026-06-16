@@ -73,6 +73,7 @@ sqldelight {
     databases {
         create("MarketDatabase") {
             packageName.set("com.htetarkarzaw.marketdashboard.data.local")
+            version = 2
         }
     }
 }
