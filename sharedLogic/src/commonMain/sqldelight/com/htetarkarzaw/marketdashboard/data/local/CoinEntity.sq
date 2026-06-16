@@ -1,0 +1,44 @@
+CREATE TABLE CoinEntity (
+    symbol TEXT NOT NULL PRIMARY KEY,
+    baseAsset TEXT NOT NULL,
+    lastPrice REAL NOT NULL,
+    priceChangePercent REAL NOT NULL,
+    highPrice REAL NOT NULL,
+    lowPrice REAL NOT NULL,
+    volume REAL NOT NULL,
+    iconUrl TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_coin_volume ON CoinEntity(volume DESC);
+
+selectAll:
+SELECT * FROM CoinEntity
+ORDER BY volume DESC
+LIMIT :limit OFFSET :offset;
+
+upsertAll:
+INSERT OR REPLACE INTO CoinEntity (
+    symbol,
+    baseAsset,
+    lastPrice,
+    priceChangePercent,
+    highPrice,
+    lowPrice,
+    volume,
+    iconUrl
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+countAll:
+SELECT COUNT(*) FROM CoinEntity;
+
+deleteAll:
+DELETE FROM CoinEntity;
+
+updatePrice:
+UPDATE CoinEntity
+SET lastPrice = ?,
+    priceChangePercent = ?,
+    highPrice = ?,
+    lowPrice = ?,
+    volume = ?
+WHERE symbol = ?;

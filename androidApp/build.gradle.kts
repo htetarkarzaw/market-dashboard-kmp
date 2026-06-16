@@ -12,12 +12,30 @@ kotlin {
     }
 }
 dependencies {
-    implementation(projects.sharedUI)
+    implementation(projects.sharedLogic)
 
     implementation(libs.androidx.activity.compose)
 
+    implementation(libs.compose.material3)
     implementation(libs.compose.uiToolingPreview)
     debugImplementation(libs.compose.uiTooling)
+
+    implementation(libs.koin.android)
+    implementation(libs.koin.androidx.compose)
+
+    implementation(libs.coil.compose)
+    implementation(libs.coil.network.okhttp)
+
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.lifecycle.viewmodel.compose)
+
+    implementation(libs.napier)
+
+    testImplementation(libs.kotlin.test)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.turbine)
+    testImplementation("junit:junit:4.13.2")
 }
 
 android {
@@ -40,6 +58,9 @@ android {
         getByName("release") {
             isMinifyEnabled = false
         }
+    }
+    buildFeatures {
+        buildConfig = true
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11

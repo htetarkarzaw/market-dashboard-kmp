@@ -3,6 +3,8 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidMultiplatformLibrary)
+    alias(libs.plugins.kotlinSerialization)
+    alias(libs.plugins.sqldelight)
 }
 
 kotlin {
@@ -34,10 +36,43 @@ kotlin {
     
     sourceSets {
         commonMain.dependencies {
-            // put your Multiplatform dependencies here
+            implementation(libs.ktor.client.core)
+            implementation(libs.ktor.client.websockets)
+            implementation(libs.ktor.client.content.negotiation)
+            implementation(libs.ktor.serialization.kotlinx.json)
+            implementation(libs.ktor.client.logging)
+            implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.kotlinx.serialization.json)
+            implementation(libs.sqldelight.runtime)
+            implementation(libs.sqldelight.coroutines.extensions)
+            implementation(libs.koin.core)
+            implementation(libs.napier)
+        }
+        androidMain.dependencies {
+            implementation(libs.ktor.client.okhttp)
+            implementation(libs.kotlinx.coroutines.android)
+            implementation(libs.sqldelight.android.driver)
+        }
+        iosMain.dependencies {
+            implementation(libs.ktor.client.darwin)
+            implementation(libs.sqldelight.native.driver)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.coroutines.test)
+            implementation(libs.turbine)
+        }
+        sourceSets["androidHostTest"].dependencies {
+            implementation(libs.mockk)
+            implementation("app.cash.sqldelight:sqlite-driver:2.0.2")
+        }
+    }
+}
+
+sqldelight {
+    databases {
+        create("MarketDatabase") {
+            packageName.set("com.htetarkarzaw.marketdashboard.data.local")
         }
     }
 }
