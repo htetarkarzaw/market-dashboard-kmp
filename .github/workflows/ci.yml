@@ -29,5 +29,11 @@ jobs:
       - name: Run tests
         run: ./gradlew :sharedLogic:allTests -Pkotlin.native.ignoreDisabledTargets=true
 
+      - name: Run Android unit tests
+        run: ./gradlew :androidApp:test
+
+      - name: Run lint
+        run: ./gradlew :androidApp:lintDebug
+
       - name: Build Android APK
         run: ./gradlew :androidApp:assembleDebug
