@@ -65,6 +65,9 @@ Binance public API (no key needed)
 25. All side effects (navigation, toasts) go through a separate Effect sealed class via SharedFlow
 26. ViewModel functions that are not onIntent() must be simple delegators to onIntent()
 
+## Testing Rules
+28. Whenever a method is added to an interface that has a Fake implementation in the test sources (e.g. FakeBinanceApi, FakeCoinRepository), always update the fake with the new method in the same change. Never leave a fake out of sync with its interface. If the fake is a stub, return a sensible default (emptyList(), null, Unit). Run ./gradlew :sharedLogic:allTests before considering any task complete.
+
 ## Git Rules
 14. After creating any new source file (.kt, .swift, .sq, .gradle.kts, .md), run: git add <filename>
 15. Never git add build outputs, .gradle folders, or generated files
