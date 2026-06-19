@@ -43,6 +43,14 @@ SET lastPrice = ?,
     volume = ?
 WHERE symbol = ?;
 
+selectBySymbolWithWatchlist:
+SELECT c.symbol, c.baseAsset, c.lastPrice, c.priceChangePercent,
+       c.highPrice, c.lowPrice, c.volume, c.iconUrl,
+       CASE WHEN w.coinId IS NOT NULL THEN 1 ELSE 0 END AS isWatchlisted
+FROM CoinEntity c
+LEFT JOIN WatchlistEntity w ON c.symbol = w.coinId
+WHERE c.symbol = :symbol;
+
 getMarketSummary:
 SELECT
     SUM(volume) AS totalVolume,

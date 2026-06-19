@@ -7,5 +7,8 @@ data class CoinUiModel(
     val priceFormatted: String,
     val priceChangeFormatted: String,
     val isPositiveChange: Boolean,
-    val isWatchlisted: Boolean = false
+    val highFormatted: String,
+    val lowFormatted: String,
+    val volumeFormatted: String,
+    val isWatchlisted: Boolean = false,
 )

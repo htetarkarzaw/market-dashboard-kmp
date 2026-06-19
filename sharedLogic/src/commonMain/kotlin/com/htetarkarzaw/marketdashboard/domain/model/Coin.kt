@@ -8,5 +8,6 @@ data class Coin(
     val highPrice: Double,
     val lowPrice: Double,
     val volume: Double,
-    val iconUrl: String
+    val iconUrl: String,
+    val isWatchlisted: Boolean = false,
 )

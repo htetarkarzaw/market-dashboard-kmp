@@ -14,6 +14,7 @@ kotlin {
 }
 dependencies {
     implementation(projects.sharedLogic)
+    implementation(libs.ktor.client.core)
 
     implementation(libs.androidx.activity.compose)
 
@@ -21,6 +22,7 @@ dependencies {
     implementation(libs.compose.material.icons.extended)
     implementation(libs.compose.uiToolingPreview)
     debugImplementation(libs.compose.uiTooling)
+    debugImplementation(libs.okhttp.profiler)
 
     implementation(libs.koin.android)
     implementation(libs.koin.androidx.compose)
@@ -36,6 +38,9 @@ dependencies {
 
     implementation(libs.androidx.navigation3.compose)
     implementation(libs.androidx.navigation3.runtime)
+
+    implementation(libs.vico.compose)
+    implementation(libs.vico.compose.m3)
 
     testImplementation(libs.kotlin.test)
     testImplementation(libs.kotlinx.coroutines.test)

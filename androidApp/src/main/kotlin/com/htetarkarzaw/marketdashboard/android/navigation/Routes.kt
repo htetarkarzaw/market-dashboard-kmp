@@ -8,3 +8,6 @@ object CoinListRoute : NavKey
 
 @Serializable
 object WatchlistRoute : NavKey
+
+@Serializable
+data class CoinDetailRoute(val symbol: String) : NavKey

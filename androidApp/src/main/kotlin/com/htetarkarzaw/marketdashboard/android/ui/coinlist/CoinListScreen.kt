@@ -1,5 +1,6 @@
 package com.htetarkarzaw.marketdashboard.android.ui.coinlist
 
+import androidx.compose.foundation.clickable
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -15,11 +16,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.WifiOff
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -27,7 +31,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -66,7 +69,8 @@ import org.koin.androidx.compose.koinViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CoinListScreen(
-    viewModel: CoinListViewModel = koinViewModel()
+    onCoinClick: (String) -> Unit = {},
+    viewModel: CoinListViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -92,34 +96,61 @@ fun CoinListScreen(
 
 
     Box(modifier = Modifier.fillMaxSize()) {
-        PullToRefreshBox(
-            isRefreshing = (uiState as? Success)?.isRefreshing ?: false,
-            onRefresh = { viewModel.onIntent(Refresh) },
-            modifier = Modifier.fillMaxSize(),
-            state = pullToRefreshState
-        ) {
-            when (val state = uiState) {
-                is Loading -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator()
-                    }
+        when (val state = uiState) {
+            is Loading -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
                 }
-                is Error -> {
+            }
+            is Error -> {
+                PullToRefreshBox(
+                    isRefreshing = false,
+                    onRefresh = { viewModel.onIntent(LoadInitial) },
+                    modifier = Modifier.fillMaxSize(),
+                ) {
                     Column(
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 32.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
+                        verticalArrangement = Arrangement.Center,
                     ) {
-                        Text(text = state.message)
-                        TextButton(onClick = { viewModel.onIntent(LoadInitial) }) {
+                        Icon(
+                            imageVector = Icons.Filled.WifiOff,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(64.dp),
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = "No connection",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Unable to reach Binance. Check your internet and try again.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center,
+                        )
+                        Spacer(modifier = Modifier.height(24.dp))
+                        Button(onClick = { viewModel.onIntent(LoadInitial) }) {
                             Text("Retry")
                         }
                     }
                 }
-                is Success -> {
+            }
+            is Success -> {
+                PullToRefreshBox(
+                    isRefreshing = state.isRefreshing,
+                    onRefresh = { viewModel.onIntent(Refresh) },
+                    modifier = Modifier.fillMaxSize(),
+                    state = pullToRefreshState,
+                ) {
                     LazyColumn(
                         state = listState,
                         modifier = Modifier.fillMaxSize(),
@@ -163,7 +194,10 @@ fun CoinListScreen(
                                     }
                                 }
                             ) {
-                                CoinListItem(coin = coin)
+                                CoinListItem(
+                                    coin = coin,
+                                    modifier = Modifier.clickable { onCoinClick(coin.symbol) },
+                                )
                             }
                             val shouldLoadMore = index == state.coins.lastIndex && !state.isLoadingMore
                             LaunchedEffect(state.coins.size) {

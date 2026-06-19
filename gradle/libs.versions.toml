@@ -18,6 +18,8 @@ material3 = "1.11.0-alpha07"
 sqldelight = "2.0.2"
 napier = "2.7.1"
 navigation3 = "1.1.2"
+vico = "2.0.0-beta.2"
+okhttpProfiler = "1.0.8"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -54,6 +56,9 @@ sqldelight-native-driver = { module = "app.cash.sqldelight:native-driver", versi
 napier = { group = "io.github.aakira", name = "napier", version.ref = "napier" }
 androidx-navigation3-compose = { group = "androidx.navigation3", name = "navigation3-ui", version.ref = "navigation3" }
 androidx-navigation3-runtime = { group = "androidx.navigation3", name = "navigation3-runtime", version.ref = "navigation3" }
+vico-compose = { module = "com.patrykandpatrick.vico:compose", version.ref = "vico" }
+vico-compose-m3 = { module = "com.patrykandpatrick.vico:compose-m3", version.ref = "vico" }
+okhttp-profiler = { module = "com.localebro:okhttpprofiler", version.ref = "okhttpProfiler" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

@@ -7,10 +7,12 @@ import com.htetarkarzaw.marketdashboard.data.remote.BinanceWebSocketClient
 import com.htetarkarzaw.marketdashboard.data.remote.mapper.toDomain
 import com.htetarkarzaw.marketdashboard.domain.model.Coin
 import com.htetarkarzaw.marketdashboard.domain.model.MarketSummary
+import com.htetarkarzaw.marketdashboard.domain.model.PricePoint
 import com.htetarkarzaw.marketdashboard.domain.repository.CoinRepository
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import app.cash.sqldelight.coroutines.mapToOne
+import app.cash.sqldelight.coroutines.mapToOneOrNull
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -79,6 +81,28 @@ class CoinRepositoryImpl(
             }
     }
 
+    override fun getCoinWithWatchlist(symbol: String): Flow<Coin?> {
+        return database.coinEntityQueries
+            .selectBySymbolWithWatchlist(symbol = symbol)
+            .asFlow()
+            .mapToOneOrNull(Dispatchers.Default)
+            .map { result ->
+                result?.let {
+                    Coin(
+                        symbol = it.symbol,
+                        baseAsset = it.baseAsset,
+                        lastPrice = it.lastPrice,
+                        priceChangePercent = it.priceChangePercent,
+                        highPrice = it.highPrice,
+                        lowPrice = it.lowPrice,
+                        volume = it.volume,
+                        iconUrl = it.iconUrl,
+                        isWatchlisted = it.isWatchlisted != 0L,
+                    )
+                }
+            }
+    }
+
     override fun getCoins(page: Int, pageSize: Int): Flow<List<Coin>> {
         val offset = page * pageSize
         return database.coinEntityQueries
@@ -87,6 +111,11 @@ class CoinRepositoryImpl(
             .mapToList(Dispatchers.Default)
             .map { entities -> entities.map { it.toDomain() } }
     }
+
+    override suspend fun getKlines(symbol: String, interval: String, limit: Int): List<PricePoint> =
+        api.getKlines(symbol, interval, limit).map { kline ->
+            PricePoint(time = kline.openTime, price = kline.close.toDouble())
+        }
 
     private fun CoinEntity.toDomain(): Coin = Coin(
         symbol = symbol,
