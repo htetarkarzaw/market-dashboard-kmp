@@ -74,3 +74,15 @@ Binance public API (no key needed)
 16. Always respect .gitignore rules
 17. Never stage: build/, .gradle/, *.class, local.properties, *.iml, .DS_Store
 27. Do not add Co-Authored-By trailer to commit messages
+
+## "Ship It" Workflow
+When the user says "ship it", execute these steps in order. Stop immediately and report the error clearly if any step fails — do not continue.
+
+1. `git add -A`
+2. `git commit -m "<conventional commit message based on what changed>"`
+3. `git push origin <current-branch>`
+4. `gh pr create --base develop --fill`
+5. `gh pr merge --auto --squash`
+6. Echo: "PR created with auto-merge enabled. Switching to develop — check GitHub Actions to confirm CI passes and the PR merges."
+7. `git checkout develop`
+8. `git pull origin develop`
