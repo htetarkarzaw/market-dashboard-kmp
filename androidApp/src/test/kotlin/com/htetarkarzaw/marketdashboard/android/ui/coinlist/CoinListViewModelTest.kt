@@ -2,14 +2,22 @@ package com.htetarkarzaw.marketdashboard.android.ui.coinlist
 
 import app.cash.turbine.test
 import com.htetarkarzaw.marketdashboard.domain.model.Coin
+import com.htetarkarzaw.marketdashboard.domain.model.MarketSummary
+import com.htetarkarzaw.marketdashboard.domain.model.PricePoint
 import com.htetarkarzaw.marketdashboard.domain.repository.CoinRepository
+import com.htetarkarzaw.marketdashboard.domain.repository.WatchlistRepository
+import com.htetarkarzaw.marketdashboard.domain.usecase.AddToWatchlistUseCase
 import com.htetarkarzaw.marketdashboard.domain.usecase.GetCoinsUseCase
+import com.htetarkarzaw.marketdashboard.domain.usecase.GetMarketSummaryUseCase
+import com.htetarkarzaw.marketdashboard.domain.usecase.GetWatchlistUseCase
 import com.htetarkarzaw.marketdashboard.domain.usecase.RefreshCoinsUseCase
 import com.htetarkarzaw.marketdashboard.domain.usecase.StartPriceUpdatesUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestCoroutineScheduler
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -30,14 +38,27 @@ class FakeCoinRepository : CoinRepository {
         if (shouldThrow) throw Exception("Network error")
         emit(coinsToReturn)
     }
-
+    override fun getCoinWithWatchlist(symbol: String): Flow<Coin?> = emptyFlow()
+    override fun getMarketSummary(): Flow<MarketSummary> = flowOf(
+        MarketSummary(
+            totalVolume = 1_000_000_000.0,
+            topGainerSymbol = "BTCUSDT",
+            topGainerPercent = 5.0,
+            topLoserSymbol = "ETHUSDT",
+            topLoserPercent = -3.0,
+        )
+    )
     override suspend fun refreshCoins() {
         if (shouldThrow) throw Exception("Network error")
     }
+    override suspend fun startPriceUpdates() = Unit
+    override suspend fun getKlines(symbol: String, interval: String, limit: Int): List<PricePoint> = emptyList()
+}
 
-    override suspend fun startPriceUpdates() {
-        // no-op for tests
-    }
+class FakeWatchlistRepository : WatchlistRepository {
+    override fun getWatchlistCoins(): Flow<List<Coin>> = flowOf(emptyList())
+    override suspend fun addToWatchlist(coinId: String) = Unit
+    override suspend fun removeFromWatchlist(coinId: String) = Unit
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -47,16 +68,21 @@ class CoinListViewModelTest {
     private val testDispatcher = StandardTestDispatcher(testScheduler)
 
     private lateinit var fakeRepository: FakeCoinRepository
+    private lateinit var fakeWatchlistRepository: FakeWatchlistRepository
     private lateinit var viewModel: CoinListViewModel
 
     @Before
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
         fakeRepository = FakeCoinRepository()
+        fakeWatchlistRepository = FakeWatchlistRepository()
         viewModel = CoinListViewModel(
             getCoinsUseCase = GetCoinsUseCase(fakeRepository),
             refreshCoinsUseCase = RefreshCoinsUseCase(fakeRepository),
-            startPriceUpdatesUseCase = StartPriceUpdatesUseCase(fakeRepository)
+            startPriceUpdatesUseCase = StartPriceUpdatesUseCase(fakeRepository),
+            getWatchlistUseCase = GetWatchlistUseCase(fakeWatchlistRepository),
+            addToWatchlistUseCase = AddToWatchlistUseCase(fakeWatchlistRepository),
+            getMarketSummaryUseCase = GetMarketSummaryUseCase(fakeRepository),
         )
     }
 
