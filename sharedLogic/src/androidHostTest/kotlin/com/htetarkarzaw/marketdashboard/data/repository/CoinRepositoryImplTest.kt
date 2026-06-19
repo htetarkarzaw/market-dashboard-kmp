@@ -17,8 +17,19 @@ import kotlin.test.assertEquals
 
 class FakeBinanceApi : BinanceApi {
     var tickers: List<CoinDto> = emptyList()
+    var klines: List<KlineDto> = emptyList()
+    var capturedKlinesSymbol: String? = null
+    var capturedKlinesInterval: String? = null
+    var capturedKlinesLimit: Int? = null
+
     override suspend fun fetchTickers(): List<CoinDto> = tickers
-    override suspend fun getKlines(symbol: String, interval: String, limit: Int): List<KlineDto> = emptyList()
+
+    override suspend fun getKlines(symbol: String, interval: String, limit: Int): List<KlineDto> {
+        capturedKlinesSymbol = symbol
+        capturedKlinesInterval = interval
+        capturedKlinesLimit = limit
+        return klines
+    }
 }
 
 class FakeBinanceWebSocketClient : BinanceWebSocketClient {
@@ -83,6 +94,40 @@ class CoinRepositoryImplTest {
 
         val coins = repository.getCoins(page = 0, pageSize = 20).first()
         assertEquals(50000.0, coins[0].lastPrice)
+    }
+
+    @Test
+    fun getKlinesForwardsArgumentsToApi() = runTest {
+        repository.getKlines("BTCUSDT", "1m", 60)
+
+        assertEquals("BTCUSDT", fakeApi.capturedKlinesSymbol)
+        assertEquals("1m", fakeApi.capturedKlinesInterval)
+        assertEquals(60, fakeApi.capturedKlinesLimit)
+    }
+
+    @Test
+    fun getKlinesMapsKlineDtoToPricePoint() = runTest {
+        fakeApi.klines = listOf(
+            KlineDto(openTime = 1_700_000_000_000L, close = "67500.50"),
+            KlineDto(openTime = 1_700_003_600_000L, close = "68100.25"),
+        )
+
+        val result = repository.getKlines("BTCUSDT", "1m", 60)
+
+        assertEquals(2, result.size)
+        assertEquals(1_700_000_000_000L, result[0].time)
+        assertEquals(67500.50, result[0].price)
+        assertEquals(1_700_003_600_000L, result[1].time)
+        assertEquals(68100.25, result[1].price)
+    }
+
+    @Test
+    fun getKlinesReturnsEmptyListWhenApiReturnsEmpty() = runTest {
+        fakeApi.klines = emptyList()
+
+        val result = repository.getKlines("BTCUSDT", "1m", 60)
+
+        assertEquals(emptyList(), result)
     }
 
     private fun coinDto(
