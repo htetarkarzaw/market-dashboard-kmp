@@ -6,13 +6,14 @@ import com.htetarkarzaw.marketdashboard.data.remote.BinanceApi
 import com.htetarkarzaw.marketdashboard.data.remote.BinanceWebSocketClient
 import com.htetarkarzaw.marketdashboard.data.remote.KtorBinanceApi
 import com.htetarkarzaw.marketdashboard.data.remote.KtorBinanceWebSocketClient
-import com.htetarkarzaw.marketdashboard.data.remote.createHttpClient
 import com.htetarkarzaw.marketdashboard.data.repository.CoinRepositoryImpl
 import com.htetarkarzaw.marketdashboard.data.repository.WatchlistRepositoryImpl
 import com.htetarkarzaw.marketdashboard.domain.repository.CoinRepository
 import com.htetarkarzaw.marketdashboard.domain.repository.WatchlistRepository
 import com.htetarkarzaw.marketdashboard.domain.usecase.AddToWatchlistUseCase
+import com.htetarkarzaw.marketdashboard.domain.usecase.GetCoinDetailUseCase
 import com.htetarkarzaw.marketdashboard.domain.usecase.GetCoinsUseCase
+import com.htetarkarzaw.marketdashboard.domain.usecase.GetKlinesUseCase
 import com.htetarkarzaw.marketdashboard.domain.usecase.GetMarketSummaryUseCase
 import com.htetarkarzaw.marketdashboard.domain.usecase.GetWatchlistUseCase
 import com.htetarkarzaw.marketdashboard.domain.usecase.RefreshCoinsUseCase
@@ -25,7 +26,6 @@ import org.koin.dsl.bind
 import org.koin.dsl.module
 
 val appModule = module {
-    single { createHttpClient() }
     single<BinanceApi> { KtorBinanceApi(get()) }
     single<BinanceWebSocketClient> { KtorBinanceWebSocketClient(get()) }
     single { MarketDatabase(get<DatabaseDriverFactory>().createDriver()) }
@@ -38,6 +38,8 @@ val appModule = module {
     factory { AddToWatchlistUseCase(get()) }
     factory { RemoveFromWatchlistUseCase(get()) }
     factory { GetMarketSummaryUseCase(get()) }
+    factory { GetKlinesUseCase(get()) }
+    factory { GetCoinDetailUseCase(get()) }
 }
 
 fun initKoin(

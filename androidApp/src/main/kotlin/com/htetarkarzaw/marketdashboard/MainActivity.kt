@@ -26,8 +26,10 @@ import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
+import com.htetarkarzaw.marketdashboard.android.navigation.CoinDetailRoute
 import com.htetarkarzaw.marketdashboard.android.navigation.CoinListRoute
 import com.htetarkarzaw.marketdashboard.android.navigation.WatchlistRoute
+import com.htetarkarzaw.marketdashboard.android.ui.coindetail.CoinDetailScreen
 import com.htetarkarzaw.marketdashboard.android.ui.coinlist.CoinListScreen
 import com.htetarkarzaw.marketdashboard.android.ui.watchlist.WatchlistScreen
 
@@ -38,6 +40,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             MaterialTheme {
                 val backStack = rememberNavBackStack(CoinListRoute)
+                val showBottomNav = backStack.lastOrNull() !is CoinDetailRoute
 
                 Box(
                     modifier = Modifier
@@ -49,14 +52,24 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier
                             .fillMaxSize()
                             .navigationBarsPadding()
-                            .padding(bottom = 80.dp),
-                        onBack = { backStack.removeLastOrNull() },
+                            .then(if (showBottomNav) Modifier.padding(bottom = 80.dp) else Modifier),
+                        onBack = { if (backStack.size > 1) backStack.removeLastOrNull() },
                         entryProvider = entryProvider {
-                            entry<CoinListRoute> { CoinListScreen() }
+                            entry<CoinListRoute> {
+                                CoinListScreen(
+                                    onCoinClick = { symbol -> backStack.add(CoinDetailRoute(symbol)) }
+                                )
+                            }
                             entry<WatchlistRoute> { WatchlistScreen() }
+                            entry<CoinDetailRoute> { route ->
+                                CoinDetailScreen(
+                                    symbol = route.symbol,
+                                    navigateUp = { backStack.removeLastOrNull() },
+                                )
+                            }
                         }
                     )
-                    NavigationBar(
+                    if (showBottomNav) NavigationBar(
                         modifier = Modifier.align(Alignment.BottomCenter),
                         windowInsets = WindowInsets.navigationBars
                     ) {
