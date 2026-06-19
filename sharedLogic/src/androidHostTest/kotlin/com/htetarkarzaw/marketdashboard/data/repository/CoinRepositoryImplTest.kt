@@ -5,6 +5,7 @@ import com.htetarkarzaw.marketdashboard.data.local.MarketDatabase
 import com.htetarkarzaw.marketdashboard.data.remote.BinanceApi
 import com.htetarkarzaw.marketdashboard.data.remote.BinanceWebSocketClient
 import com.htetarkarzaw.marketdashboard.data.remote.dto.CoinDto
+import com.htetarkarzaw.marketdashboard.data.remote.dto.KlineDto
 import com.htetarkarzaw.marketdashboard.data.remote.dto.TickerDto
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
@@ -17,6 +18,7 @@ import kotlin.test.assertEquals
 class FakeBinanceApi : BinanceApi {
     var tickers: List<CoinDto> = emptyList()
     override suspend fun fetchTickers(): List<CoinDto> = tickers
+    override suspend fun getKlines(symbol: String, interval: String, limit: Int): List<KlineDto> = emptyList()
 }
 
 class FakeBinanceWebSocketClient : BinanceWebSocketClient {
