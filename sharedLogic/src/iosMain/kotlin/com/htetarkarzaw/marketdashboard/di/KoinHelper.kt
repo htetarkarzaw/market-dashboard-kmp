@@ -1,6 +1,7 @@
 package com.htetarkarzaw.marketdashboard.di
 
 import com.htetarkarzaw.marketdashboard.domain.usecase.GetCoinsUseCase
+import com.htetarkarzaw.marketdashboard.domain.usecase.GetMarketSummaryUseCase
 import com.htetarkarzaw.marketdashboard.domain.usecase.RefreshCoinsUseCase
 import com.htetarkarzaw.marketdashboard.domain.usecase.StartPriceUpdatesUseCase
 import org.koin.mp.KoinPlatform
@@ -12,3 +13,4 @@ fun initKoin() {
 fun makeGetCoinsUseCase(): GetCoinsUseCase = KoinPlatform.getKoin().get()
 fun makeRefreshCoinsUseCase(): RefreshCoinsUseCase = KoinPlatform.getKoin().get()
 fun makeStartPriceUpdatesUseCase(): StartPriceUpdatesUseCase = KoinPlatform.getKoin().get()
+fun makeGetMarketSummaryUseCase(): GetMarketSummaryUseCase = KoinPlatform.getKoin().get()

@@ -1,7 +1,9 @@
 package com.htetarkarzaw.marketdashboard.util
 
 import com.htetarkarzaw.marketdashboard.domain.model.Coin
+import com.htetarkarzaw.marketdashboard.domain.model.MarketSummary
 import com.htetarkarzaw.marketdashboard.domain.usecase.GetCoinsUseCase
+import com.htetarkarzaw.marketdashboard.domain.usecase.GetMarketSummaryUseCase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -25,8 +27,18 @@ fun <T> observe(
     return { scope.cancel() }
 }
 
-// Kotlin generics erase to Any in ObjC/Swift, so this typed wrapper preserves type safety
+// Kotlin generics erase to Any in ObjC/Swift, so typed wrappers below preserve type safety
 // for iOS callers while delegating to the generic observe() internally.
+fun observeMarketSummary(
+    useCase: GetMarketSummaryUseCase,
+    onUpdate: (MarketSummary) -> Unit,
+    onError: (String) -> Unit
+): () -> Unit = observe(
+    flow = useCase(),
+    onUpdate = onUpdate,
+    onError = onError
+)
+
 fun observeCoins(
     useCase: GetCoinsUseCase,
     page: Int = 0,
