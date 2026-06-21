@@ -2,6 +2,7 @@ import SwiftUI
 
 struct CoinListScreen: View {
     @State private var viewModel = CoinListViewModel()
+    @State private var showTopBar = false
 
     var body: some View {
         NavigationStack {
@@ -31,49 +32,71 @@ struct CoinListScreen: View {
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
-                    List {
-                        ForEach(viewModel.coins, id: \.symbol) { coin in
-                            CoinRowView(coin: coin)
-                                .onAppear {
-                                    if coin.symbol == viewModel.coins.last?.symbol && !viewModel.isLoadingMore {
-                                        Task { await viewModel.loadMore() }
-                                    }
-                                }
-                        }
-                        if viewModel.isLoadingMore {
-                            HStack {
-                                Spacer()
-                                ProgressView()
+                    ZStack(alignment: .top) {
+                        List {
+                            MarketSummaryHeaderView(summary: viewModel.marketSummary)
+                                .listRowSeparator(.hidden)
+                                .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                                .onAppear { showTopBar = false }
+                                .onDisappear { showTopBar = true }
+                            ForEach(viewModel.coins, id: \.symbol) { coin in
+                                CoinRowView(coin: coin)
                                     .onAppear {
-                                        Task { await viewModel.loadMore() }
+                                        if coin.symbol == viewModel.coins.last?.symbol && !viewModel.isLoadingMore {
+                                            Task { await viewModel.loadMore() }
+                                        }
                                     }
-                                Spacer()
                             }
-                            .listRowSeparator(.hidden)
-                        } else if viewModel.hasReachedEnd {
-                            HStack(spacing: 12) {
-                                Rectangle()
-                                    .fill(Color.secondary.opacity(0.3))
-                                    .frame(height: 1)
-                                Text("All coins loaded")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                                    .fixedSize()
-                                Rectangle()
-                                    .fill(Color.secondary.opacity(0.3))
-                                    .frame(height: 1)
+                            if viewModel.isLoadingMore {
+                                HStack {
+                                    Spacer()
+                                    ProgressView()
+                                        .onAppear {
+                                            Task { await viewModel.loadMore() }
+                                        }
+                                    Spacer()
+                                }
+                                .listRowSeparator(.hidden)
+                            } else if viewModel.hasReachedEnd {
+                                HStack(spacing: 12) {
+                                    Rectangle()
+                                        .fill(Color.secondary.opacity(0.3))
+                                        .frame(height: 1)
+                                    Text("All coins loaded")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                        .fixedSize()
+                                    Rectangle()
+                                        .fill(Color.secondary.opacity(0.3))
+                                        .frame(height: 1)
+                                }
+                                .padding(.vertical, 8)
+                                .listRowSeparator(.hidden)
                             }
-                            .padding(.vertical, 8)
-                            .listRowSeparator(.hidden)
                         }
-                    }
-                    .listStyle(.plain)
-                    .refreshable {
-                        await viewModel.refresh()
+                        .listStyle(.plain)
+                        .refreshable {
+                            await viewModel.refresh()
+                        }
+
+                        HStack {
+                            Text("Market")
+                                .font(.headline.weight(.semibold))
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 16)
+                        .padding(.bottom, 12)
+                        .background {
+                            Rectangle()
+                                .fill(.regularMaterial)
+                                .ignoresSafeArea(edges: .top)
+                        }
+                        .opacity(showTopBar ? 1 : 0)
+                        .animation(.easeInOut(duration: 0.3), value: showTopBar)
                     }
                 }
             }
-            .navigationTitle("Market")
+            .navigationBarHidden(true)
             .overlay(alignment: .top) {
                 if let errorMessage = viewModel.error, !viewModel.coins.isEmpty {
                     ErrorBannerView(message: errorMessage) {

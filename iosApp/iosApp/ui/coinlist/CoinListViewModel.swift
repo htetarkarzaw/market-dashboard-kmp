@@ -4,6 +4,7 @@ import SharedLogic
 @MainActor
 @Observable class CoinListViewModel {
     var coins: [Coin] = []
+    var marketSummary: MarketSummary? = nil
     var isLoading: Bool = false
     var isLoadingMore: Bool = false
     var hasReachedEnd: Bool = false
@@ -14,12 +15,15 @@ import SharedLogic
     private let getCoinsUseCase = KoinHelperKt.makeGetCoinsUseCase()
     private let refreshCoinsUseCase = KoinHelperKt.makeRefreshCoinsUseCase()
     private let startPriceUpdatesUseCase = KoinHelperKt.makeStartPriceUpdatesUseCase()
+    private let getMarketSummaryUseCase = KoinHelperKt.makeGetMarketSummaryUseCase()
 
     nonisolated(unsafe) private var cancelObservers: [() -> Void] = []
+    nonisolated(unsafe) private var marketSummaryCancelToken: (() -> Void)? = nil
     private var refreshContinuation: CheckedContinuation<Void, Never>? = nil
 
     deinit {
         cancelObservers.forEach { $0() }
+        marketSummaryCancelToken?()
     }
 
     func loadCoins() async {
@@ -31,6 +35,8 @@ import SharedLogic
         do {
             try await refreshCoinsUseCase.invoke()
             restartObserver()
+            marketSummaryCancelToken?()
+            observeMarketSummary()
         } catch {
             self.error = error.localizedDescription
         }
@@ -59,6 +65,16 @@ import SharedLogic
         isLoadingMore = true
         currentPage += 1
         restartObserver()
+    }
+
+    func observeMarketSummary() {
+        marketSummaryCancelToken = FlowHelperKt.observeMarketSummary(
+            useCase: getMarketSummaryUseCase,
+            onUpdate: { [weak self] summary in
+                self?.marketSummary = summary
+            },
+            onError: { _ in }
+        )
     }
 
     private func restartObserver() {
