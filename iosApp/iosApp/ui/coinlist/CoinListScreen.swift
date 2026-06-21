@@ -41,6 +41,7 @@ struct CoinListScreen: View {
                                 .onDisappear { showTopBar = true }
                             ForEach(viewModel.coins, id: \.symbol) { coin in
                                 CoinRowView(coin: coin)
+                                    .listRowSeparator(.hidden)
                                     .onAppear {
                                         if coin.symbol == viewModel.coins.last?.symbol && !viewModel.isLoadingMore {
                                             Task { await viewModel.loadMore() }
@@ -70,8 +71,9 @@ struct CoinListScreen: View {
                                         .fill(Color.secondary.opacity(0.3))
                                         .frame(height: 1)
                                 }
-                                .padding(.vertical, 8)
+                                .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
                                 .listRowSeparator(.hidden)
+                                .listRowBackground(Color.clear)
                             }
                         }
                         .listStyle(.plain)
