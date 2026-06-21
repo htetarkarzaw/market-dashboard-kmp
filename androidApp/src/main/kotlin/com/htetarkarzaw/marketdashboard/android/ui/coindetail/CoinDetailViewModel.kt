@@ -3,7 +3,7 @@ package com.htetarkarzaw.marketdashboard.android.ui.coindetail
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.htetarkarzaw.marketdashboard.android.ui.model.toUiModel
-import com.htetarkarzaw.marketdashboard.android.util.formatPrice
+import com.htetarkarzaw.marketdashboard.util.formatPrice
 import com.htetarkarzaw.marketdashboard.domain.usecase.AddToWatchlistUseCase
 import com.htetarkarzaw.marketdashboard.domain.usecase.GetCoinDetailUseCase
 import com.htetarkarzaw.marketdashboard.domain.usecase.GetKlinesUseCase
@@ -120,7 +120,7 @@ class CoinDetailViewModel(
     }
 
     private fun updatePrice(newPrice: Double) {
-        _uiState.update { it.copy(livePrice = newPrice.formatPrice()) }
+        _uiState.update { it.copy(livePrice = formatPrice(newPrice)) }
     }
 
     private fun toggleWatchlist() {

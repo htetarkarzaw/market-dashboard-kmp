@@ -95,12 +95,12 @@ class CoinDetailViewModelTest {
         assertTrue(pricePointsBefore.isNotEmpty())
 
         viewModel.uiState.test {
-            awaitItem() // consume current state
             viewModel.onIntent(CoinDetailIntent.PriceUpdated("BTCUSDT", 70000.0))
-            val updated = awaitItem()
+            advanceUntilIdle()
+            val updated = expectMostRecentItem()
             // pricePoints are stable — livePrice is the only indicator that changes on each tick
             assertEquals(pricePointsBefore, updated.pricePoints)
-            assertEquals("\$70000.00", updated.livePrice)
+            assertEquals("\$70,000.00", updated.livePrice)
             cancel()
         }
     }
